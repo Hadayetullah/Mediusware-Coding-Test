@@ -19,6 +19,7 @@
       <div class="col-md-2">
         <select name="variant" id="" class="form-control">
           <option selected disabled>--Select A Variant--</option>
+          <!-- Populate variants dynamically if needed -->
         </select>
       </div>
 
@@ -60,7 +61,7 @@
   </form>
 
   <div class="card-body">
-    <div class="table-response">
+    <div class="table-responsive">
       <table class="table">
         <thead>
           <tr>
@@ -71,16 +72,15 @@
             <th width="150px">Action</th>
           </tr>
         </thead>
-
         <tbody>
           {% for product in products %}
           <tr>
-            <td>{{forloop.counter}}</td>
+            <td>{{ forloop.counter }}</td>
             <td>
-              {{product.title}} <br />
-              Created at : {{product.created_at|date:"d-M-Y"}}
+              {{ product.title }}<br />
+              Created at: {{ product.created_at|date:"d-M-Y" }}
             </td>
-            <td>{{product.description}}</td>
+            <td>{{ product.description }}</td>
             <td>
               <dl
                 class="row mb-0"
@@ -89,17 +89,19 @@
               >
                 {% for variant in product.variants %}
                 <dt class="col-sm-3 pb-0">
-                  {{ variant.variant_title_one }}/{{ variant.variant_title_two}}
-                  / {{ variant.variant_title_three}}
+                  {{ variant.variant_title_one }}
+                  <span>/</span>
+                  {{ variant.variant_title_two }}
+                  <span>/</span>
+                  {{ variant.variant_title_three }}
                 </dt>
-
                 <dd class="col-sm-9">
                   <dl class="row mb-0">
                     <dd class="col-sm-4 pb-0">Price: {{ variant.price }}</dd>
                     <dd class="col-sm-8 pb-0">InStock: {{ variant.stock }}</dd>
                   </dl>
                 </dd>
-                {%endfor%}
+                {% endfor %}
               </dl>
               <button
                 onclick="$('#variant-{{ forloop.counter }}').toggleClass('h-auto')"
@@ -123,10 +125,47 @@
   <div class="card-footer">
     <div class="row justify-content-between">
       <div class="col-md-6">
-        <p>Showing 1 to {{ products|length }} out of {{ products|length }}</p>
+        <p>
+          Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} out of
+          {{ page_obj.paginator.count }}
+        </p>
       </div>
-      <div class="col-md-2">
-        <!-- Pagination if needed -->
+      <div class="col-md-6">
+        <nav aria-label="Page navigation">
+          <ul class="pagination justify-content-end">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a
+                class="page-link"
+                href="?{% if request.GET.title %}title={{ request.GET.title }}&{% endif %}{% if request.GET.variant %}variant={{ request.GET.variant }}&{% endif %}{% if request.GET.price_from %}price_from={{ request.GET.price_from }}&{% endif %}{% if request.GET.price_to %}price_to={{ request.GET.price_to }}&{% endif %}{% if request.GET.date %}date={{ request.GET.date }}&{% endif %}page={{ page_obj.previous_page_number }}"
+                aria-label="Previous"
+              >
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+            {% endif %} {% for num in page_obj.paginator.page_range %}
+            <li
+              class="page-item {% if page_obj.number == num %}active{% endif %}"
+            >
+              <a
+                class="page-link"
+                href="?{% if request.GET.title %}title={{ request.GET.title }}&{% endif %}{% if request.GET.variant %}variant={{ request.GET.variant }}&{% endif %}{% if request.GET.price_from %}price_from={{ request.GET.price_from }}&{% endif %}{% if request.GET.price_to %}price_to={{ request.GET.price_to }}&{% endif %}{% if request.GET.date %}date={{ request.GET.date }}&{% endif %}page={{ num }}"
+                >{{ num }}</a
+              >
+            </li>
+            {% endfor %} {% if page_obj.has_next %}
+            <li class="page-item">
+              <a
+                class="page-link"
+                href="?{% if request.GET.title %}title={{ request.GET.title }}&{% endif %}{% if request.GET.variant %}variant={{ request.GET.variant }}&{% endif %}{% if request.GET.price_from %}price_from={{ request.GET.price_from }}&{% endif %}{% if request.GET.price_to %}price_to={{ request.GET.price_to }}&{% endif %}{% if request.GET.date %}date={{ request.GET.date }}&{% endif %}page={{ page_obj.next_page_number }}"
+                aria-label="Next"
+              >
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
       </div>
     </div>
   </div>

@@ -18,6 +18,7 @@ class CreateProductView(generic.TemplateView):
 class ProductListView(generic.ListView):
     template_name = 'products/list.html'
     context_object_name = 'products'
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = Product.objects.all()
@@ -74,5 +75,5 @@ class ProductListView(generic.ListView):
         context['product'] = True
         context['products'] = product_list
 
-        print(context)
+        # print(context)
         return context
