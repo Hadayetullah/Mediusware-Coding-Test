@@ -17,11 +17,20 @@
             <div class="col-md-2">
                 <select name="variant" class="form-control">
                     <option selected disabled>--Select A Variant--</option>
-                    {% for variant in variants %}
+                    {% for variant_title, product_variants in variant_groups.items %} 
+                    <option disabled>
+                        {{ variant_title }}
+                    </option>
+
+                    {% for variant in product_variants %}
                     <option value="{{ variant }}" {% if request.GET.variant == variant %}selected{% endif %}>
                         {{ variant }}
                     </option>
                     {% endfor %}
+
+                    {% endfor %}
+
+                   
                 </select>
             </div>
 
