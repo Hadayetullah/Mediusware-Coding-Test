@@ -1,173 +1,128 @@
-{% extends 'backend/base.html' %} {% block title %} Product List {% endblock %}
+{% extends 'backend/base.html' %}
+
+{% block title %} Product List {% endblock %}
+
 {% block content %}
 
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-  <h1 class="h3 mb-0 text-gray-800">Products</h1>
+    <h1 class="h3 mb-0 text-gray-800">Products</h1>
 </div>
 
 <div class="card">
-  <form action="" method="get" class="card-header">
-    <div class="form-row justify-content-between">
-      <div class="col-md-2">
-        <input
-          type="text"
-          name="title"
-          placeholder="Product Title"
-          class="form-control"
-        />
-      </div>
-      <div class="col-md-2">
-        <select name="variant" id="" class="form-control">
-          <option selected disabled>--Select A Variant--</option>
-          <!-- Populate variants dynamically if needed -->
-        </select>
-      </div>
+    <form action="" method="get" class="card-header">
+        <div class="form-row justify-content-between">
+            <div class="col-md-2">
+                <input type="text" name="title" value="{{ request.GET.title }}" placeholder="Product Title" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <select name="variant" class="form-control">
+                    <option selected disabled>--Select A Variant--</option>
+                    {% for variant in variants %}
+                    <option value="{{ variant }}" {% if request.GET.variant == variant %}selected{% endif %}>
+                        {{ variant }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-      <div class="col-md-3">
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <span class="input-group-text">Price Range</span>
-          </div>
-          <input
-            type="text"
-            name="price_from"
-            aria-label="First name"
-            placeholder="From"
-            class="form-control"
-          />
-          <input
-            type="text"
-            name="price_to"
-            aria-label="Last name"
-            placeholder="To"
-            class="form-control"
-          />
+            <div class="col-md-3">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Price Range</span>
+                    </div>
+                    <input type="text" name="price_from" value="{{ request.GET.price_from }}" aria-label="First name" placeholder="From" class="form-control">
+                    <input type="text" name="price_to" value="{{ request.GET.price_to }}" aria-label="Last name" placeholder="To" class="form-control">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="date" value="{{ request.GET.date }}" placeholder="Date" class="form-control">
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary float-right"><i class="fa fa-search"></i></button>
+            </div>
         </div>
-      </div>
-      <div class="col-md-2">
-        <input
-          type="date"
-          name="date"
-          placeholder="Date"
-          class="form-control"
-        />
-      </div>
-      <div class="col-md-1">
-        <button type="submit" class="btn btn-primary float-right">
-          <i class="fa fa-search"></i>
-        </button>
-      </div>
-    </div>
-  </form>
+    </form>
 
-  <div class="card-body">
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Variant</th>
-            <th width="150px">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for product in products %}
-          <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>
-              {{ product.title }}<br />
-              Created at: {{ product.created_at|date:"d-M-Y" }}
-            </td>
-            <td>{{ product.description }}</td>
-            <td>
-              <dl
-                class="row mb-0"
-                style="height: 80px; overflow: hidden"
-                id="variant-{{ forloop.counter }}"
-              >
-                {% for variant in product.variants %}
-                <dt class="col-sm-3 pb-0">
-                  {{ variant.variant_title_one }}
-                  <span>/</span>
-                  {{ variant.variant_title_two }}
-                  <span>/</span>
-                  {{ variant.variant_title_three }}
-                </dt>
-                <dd class="col-sm-9">
-                  <dl class="row mb-0">
-                    <dd class="col-sm-4 pb-0">Price: {{ variant.price }}</dd>
-                    <dd class="col-sm-8 pb-0">InStock: {{ variant.stock }}</dd>
-                  </dl>
-                </dd>
-                {% endfor %}
-              </dl>
-              <button
-                onclick="$('#variant-{{ forloop.counter }}').toggleClass('h-auto')"
-                class="btn btn-sm btn-link"
-              >
-                Show more
-              </button>
-            </td>
-            <td>
-              <div class="btn-group btn-group-sm">
-                <a href="" class="btn btn-success">Edit</a>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Variant</th>
+                        <th width="150px">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ product.title }}<br> Created at: {{ product.created_at|date:"d-M-Y" }}</td>
+                        <td>{{ product.description }}</td>
+                        <td>
+                            <dl class="row mb-0" style="height: 80px; overflow: hidden" id="variant-{{ forloop.counter }}">
+                                {% for variant in product.productvariantprice_set.all %}
+                                <dt class="col-sm-3 pb-0">
+                                    {{ variant.product_variant_one.variant_title }} 
+                                    {% if variant.product_variant_two %} / {{ variant.product_variant_two.variant_title }}{% endif %} 
+                                    {% if variant.product_variant_three %} / {{ variant.product_variant_three.variant_title }}{% endif %}
+                                </dt>
+                                <dd class="col-sm-9">
+                                    <dl class="row mb-0">
+                                        <dd class="col-sm-4 pb-0">Price: {{ variant.price }}</dd>
+                                        <dd class="col-sm-8 pb-0">InStock: {{ variant.stock }}</dd>
+                                    </dl>
+                                </dd>
+                                {% endfor %}
+                            </dl>
+                            <button onclick="$('#variant-{{ forloop.counter }}').toggleClass('h-auto')" class="btn btn-sm btn-link">Show more</button>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="" class="btn btn-success">Edit</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-  </div>
 
-  <div class="card-footer">
-    <div class="row justify-content-between">
-      <div class="col-md-6">
-        <p>
-          Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} out of
-          {{ page_obj.paginator.count }}
-        </p>
-      </div>
-      <div class="col-md-6">
-        <nav aria-label="Page navigation">
-          <ul class="pagination justify-content-end">
-            {% if page_obj.has_previous %}
-            <li class="page-item">
-              <a
-                class="page-link"
-                href="?{% if request.GET.title %}title={{ request.GET.title }}&{% endif %}{% if request.GET.variant %}variant={{ request.GET.variant }}&{% endif %}{% if request.GET.price_from %}price_from={{ request.GET.price_from }}&{% endif %}{% if request.GET.price_to %}price_to={{ request.GET.price_to }}&{% endif %}{% if request.GET.date %}date={{ request.GET.date }}&{% endif %}page={{ page_obj.previous_page_number }}"
-                aria-label="Previous"
-              >
-                <span aria-hidden="true">&laquo;</span>
-              </a>
-            </li>
-            {% endif %} {% for num in page_obj.paginator.page_range %}
-            <li
-              class="page-item {% if page_obj.number == num %}active{% endif %}"
-            >
-              <a
-                class="page-link"
-                href="?{% if request.GET.title %}title={{ request.GET.title }}&{% endif %}{% if request.GET.variant %}variant={{ request.GET.variant }}&{% endif %}{% if request.GET.price_from %}price_from={{ request.GET.price_from }}&{% endif %}{% if request.GET.price_to %}price_to={{ request.GET.price_to }}&{% endif %}{% if request.GET.date %}date={{ request.GET.date }}&{% endif %}page={{ num }}"
-                >{{ num }}</a
-              >
-            </li>
-            {% endfor %} {% if page_obj.has_next %}
-            <li class="page-item">
-              <a
-                class="page-link"
-                href="?{% if request.GET.title %}title={{ request.GET.title }}&{% endif %}{% if request.GET.variant %}variant={{ request.GET.variant }}&{% endif %}{% if request.GET.price_from %}price_from={{ request.GET.price_from }}&{% endif %}{% if request.GET.price_to %}price_to={{ request.GET.price_to }}&{% endif %}{% if request.GET.date %}date={{ request.GET.date }}&{% endif %}page={{ page_obj.next_page_number }}"
-                aria-label="Next"
-              >
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>
-            {% endif %}
-          </ul>
-        </nav>
-      </div>
+    <div class="card-footer">
+        <div class="row justify-content-between">
+            <div class="col-md-6">
+                <p>Showing {{ products.start_index }} to {{ products.end_index }} out of {{ products.paginator.count }}</p>
+            </div>
+            <div class="col-md-6">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-end">
+                        {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if request.GET.title %}title={{ request.GET.title }}&{% endif %}{% if request.GET.variant %}variant={{ request.GET.variant }}&{% endif %}{% if request.GET.price_from %}price_from={{ request.GET.price_from }}&{% endif %}{% if request.GET.price_to %}price_to={{ request.GET.price_to }}&{% endif %}{% if request.GET.date %}date={{ request.GET.date }}&{% endif %}page={{ products.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% for num in products.paginator.page_range %}
+                        <li class="page-item {% if products.number == num %}active{% endif %}">
+                            <a class="page-link" href="?{% if request.GET.title %}title={{ request.GET.title }}&{% endif %}{% if request.GET.variant %}variant={{ request.GET.variant }}&{% endif %}{% if request.GET.price_from %}price_from={{ request.GET.price_from }}&{% endif %}{% if request.GET.price_to %}price_to={{ request.GET.price_to }}&{% endif %}{% if request.GET.date %}date={{ request.GET.date }}&{% endif %}page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endfor %}
+                        {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if request.GET.title %}title={{ request.GET.title }}&{% endif %}{% if request.GET.variant %}variant={{ request.GET.variant }}&{% endif %}{% if request.GET.price_from %}price_from={{ request.GET.price_from }}&{% endif %}{% if request.GET.price_to %}price_to={{ request.GET.price_to }}&{% endif %}{% if request.GET.date %}date={{ request.GET.date }}&{% endif %}page={{ products.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
+
 {% endblock %}
