@@ -1,9 +1,10 @@
+import json
 from django.views import generic
 from django.db.models import Q
 from django.core.paginator import Paginator
-
-from product.models import Variant, Product, ProductVariantPrice, ProductVariant
-
+from django.shortcuts import redirect
+from django.http import JsonResponse
+from product.models import Variant, Product, ProductVariantPrice, ProductVariant, ProductImage
 
 class CreateProductView(generic.TemplateView):
     template_name = 'products/create.html'
@@ -14,7 +15,43 @@ class CreateProductView(generic.TemplateView):
         context['product'] = True
         context['variants'] = list(variants.all())
         return context
-    
+
+    def post(self, request, *args, **kwargs):
+        data = request.POST
+        product = Product.objects.create(
+            title=data.get('title'),
+            sku=data.get('sku'),
+            description=data.get('description')
+        )
+
+        # Assuming files are being uploaded
+        for file in request.FILES.getlist('files'):
+            ProductImage.objects.create(product=product, file_path=file)
+
+        # Product variants
+        product_variant_data = data.get('product_variants')
+        if product_variant_data:
+            for variant in json.loads(product_variant_data):
+                ProductVariant.objects.create(
+                    product=product,
+                    variant_id=variant['option'],
+                    variant_title='/'.join(variant['tags'])
+                )
+
+        # Product variant prices
+        product_variant_price_data = data.get('product_variant_prices')
+        if product_variant_price_data:
+            for variant_price in json.loads(product_variant_price_data):
+                product_variant = ProductVariant.objects.get(variant_title=variant_price['title'])
+                ProductVariantPrice.objects.create(
+                    product=product,
+                    product_variant_one=product_variant,
+                    price=variant_price['price'],
+                    stock=variant_price['stock']
+                )
+
+        return JsonResponse({"message": "Product created successfully"}, status=201)
+
     
 
 class ProductListView(generic.ListView):
@@ -56,13 +93,6 @@ class ProductListView(generic.ListView):
         variants = ProductVariant.objects.values_list('variant_title', flat=True).distinct()
         print("Variant: ", variants)
         context['variants'] = variants
-
-        # a = Variant.objects.values_list('title', flat=True).distinct()
-        # for b in a:
-        #     c = ProductVariant.objects.filter(variant__title=b).values_list('variant_title', flat=True).distinct()
-        #     print(c)
-            # for d in c:
-            #     print("Variant title: ", d)
 
         # Group product variants by variant titles
         variant_groups = {}
